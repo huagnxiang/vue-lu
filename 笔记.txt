@@ -1,0 +1,337 @@
+vue 环境
+  - node
+  - npm i vue -g
+  - npm install -g @vue/cli
+  - devtools 用谷歌助手安装
+  检查环境:
+    vue --version / vue -V
+
+  - vue-cli(vue脚手架工具)
+     vue cli 是一个基于 Vue.js 进行快速开发的完整系统
+     基于 webpack 构建，并带有合理的默认配置
+     集成了前端生态中最好的工具
+     有webpack-dev-server的支持，相当于启动了一个请求服务器，给你搭建了一个测试环境，只关注开发就好
+
+    - 通过脚手架创建项目
+      - vue create '项目名称'
+      - vue ui
+        打开vue提供的视图工具创建
+
+    - 脚手架项目目录
+      - node_modules: 所有的依赖文件夹
+      - public: 公共资源文件夹
+      - src: 项目入口文件夹
+        - assets: 资源文件夹
+        - components: 一般组件文件夹
+        - views: 路由(视图)组件文件夹
+        - App.vue: 根组件
+        - main.js: 入口js文件，全局配置
+        - router.js: 路由文件
+        - store.js: vuex文件
+      - tests: 测试文件夹
+      - .browererslistrc: 浏览器版本配置文件
+      - .eslintrc.js: eslint配置文件
+      - .gitignore: 提交git时忽略的文件
+      - .babel.config.js: babel配置文件
+      - .package.json: 包管理文件
+      - .package-lock.json: 包版本管理文件
+      - postcss.config.js: 给浏览器自动加上兼容性的前缀
+
+      - 引入第三方样式文件
+        - main.js通过import引入
+        - 在组件内style内当中通过@import(前提是按照了sass)
+
+    - 路由配置
+      - 每一个路由为一个对象
+      - name: 路由名字
+      - path: 路由路径
+      - component: 路由对应的组件
+      - 引入路由的两种方式:
+        - 直接通过文件引入
+        - 异步按需加载路由
+
+    - 组件
+      每一个.vue文件都是一个组件，而且都是局部组件，可以在任意地方引用
+      目的: 提高代码复用性
+      - 使用组件:
+          - 先声明组件:
+              通过 import 组件名 from 组件路径
+          - 注册组件:
+              在要引用的组件中的components注册
+          - 使用
+              注册的名字可以当html标签使用(如果是复杂命名，用-连接，不建议用驼峰命名)
+      - 父子组件
+        - 被引用的组件称为子组件，在哪里引用的组件叫父组件
+        - 父子组件传值
+          - 父传子:
+             给子组件绑定属性传值
+             子组件通过props接受
+             props:
+              可以写成数组，也可以写成对象，我们要求必须写成对象形式
+              msg:｛
+                type: 类型(可以是多个类型),
+                default: 默认值,
+                required: 是否为必填项,
+                validator (value) {}: 验证函数
+              ｝
+
+          - 子传父
+              子组件:
+              this.$emit('事件名', 传入的值)
+              父组件:
+              在子组件上绑定@'事件名'(data): data为传过来的参数
+              传入的值可以是普通的值，可以是数组，也可以是对象
+
+              - .sync修饰符
+                子组件直接修改父组件的数据
+                用法:
+                  父组件绑定值的时候加上.sync修饰符
+                  子组件发送this.$emit('update:属性值', 改变的值)
+      - 插槽(slot)
+          - 用于内容的分发，允许在一个组件中，在你调用的时候自定义组件中某个或多个区域的内容
+          匿名插槽: 直接用slot标签，在slot标签里写内容
+          具名插槽: 添加name属性，使用的时候 slot='name'
+
+    - axios(基于promise封装的ajax请求库)
+      - 安装方法:
+        npm i -S axios
+        npm i -S qs (处理post请求的参数)
+      - 封装ajax方法，写在一个单独的js文件中，post请求我们会用qs这个库处理
+      - 全局配置axios
+        - 设置默认的请求超时时间。例如超过了10s，就会告知用户当前请求超时，请刷新等
+          axios.defaults.timeout = 10000
+
+        - 设置post的请求头为application/x-www-form-urlencoded;charset=UTF-8
+          axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
+
+        - 请求数据拦截(一般用作在每个请求上加token)
+            instance.interceptors.request.use( config => {
+               const token = store.state.token;
+               token && (config.headers.Authorization = token);
+               return config
+            }, error => {
+                return Promise.reject(error)
+            })
+
+        - 响应拦截
+          axios.interceptors.response.use(
+           response => {
+           // 如果返回的状态码为200，说明接口请求成功，可以正常拿到数据
+           // 否则的话抛出错误
+           if (response.status === 200) {
+            return Promise.resolve(response);
+           } else {
+            return Promise.reject(response);
+           }
+           }
+
+        - 跨域配置
+          在根目录下创建一个vue.config.js
+          devServer: {
+              proxy: {
+                '/api': {
+                  ws: false,
+                  target: 'http://localhost:3000',
+                  changeOrigin: true,
+                  pathRewrite: {
+                    '^/api': ''
+                  }
+                }
+              }
+            }
+          - 例子: https://api-m.mtime.cn/Showtime/HotCitiesByCinema.api
+
+    - 路由(vue-router)
+        - <router-link></router-link>
+          用来生成路由标签，默认是a标签，可以用tag属性改变标签
+
+        - <router-view></router-view>
+          用来显示当前路由，如果想让路由生效，必须加上这个标签
+
+        - 路由配置
+          所有的路由配置全部写在router.js中
+          mode: 路由模式, 写成history模式
+          routes: 路由数组，匹配的每一个路由对象
+          默认导出router对象
+
+           - 路由对象:
+              path: 路由路径
+              name: 路由名字
+              component: 路由对应加载的组件
+              除了首页我们用引入组件的方式加载，其他路由我们一律用按需加载组件(性能好)
+
+              redirect: 重定向
+                - 把 / 根路径重定向到我们的首页组件
+                - 把 * 重定向到我们的首页组件
+                  path: '*': 写在路由数组的最后面，表示路径匹配不到
+                  一般两种处理:
+                    - 重定向到首页
+                    - 创建一个错误组件，一旦路由匹配不到，就加载这个错误组件
+
+               - 路由类名
+                  .router-link-active
+                    默认是全包含匹配规则，即path名全包含在当前router path名开头的router也会被匹配到
+                      1. <router-link to='/'>
+                      2. <router-link to='/a'>
+                      3. <router-link to='/b'>
+                      4. <router-link to='/ab'>
+
+        　　　　　　　2/3号被选中 1号也会被匹配到router-link-active，4号被选中1号2号两个也会被匹配到router-link-active。
+        　　　　　　　可以通过在router添加exact属性改变为精精确匹配
+
+                  .router-link-exact-active
+                    精确匹配规则，即只有当前点击router被匹配
+
+                    设置类名:(设置在路由文件中)
+                      linkActiveClass: 全部匹配
+                      linkExactActiveClass: 精确匹配
+
+
+              - 动态匹配路由
+                - 定义路由时在路径后面加上 /:id
+                  :后面为动态绑定的属性
+                  接收参数: {{route.params}}
+                  匹配的属性可以为多个
+                    :/user/:id
+
+              - 嵌套路由
+                  路由组件当中再嵌套路由
+                  定义:
+                    在有子路由的路由对象中加上children属性，是一个数组，里面再定义子路由对象
+                    使用路由的组件必须加上 <router-view></router-view>属性
+                    子路由可以再嵌套子路由,子路由路径不需要加/
+
+              - 路由动画
+                - 用transition标签把router-view包裹起来
+
+              - 编程氏导航
+                - vue提供了两个路由对象
+                - $route 当前路由对象
+                - $router 全局路由对象
+                路由跳转:
+                  this.$router.push('/xxx')
+                  this.$router.push('{name: 路由名}')
+                  this.$router.replace('/xxx')
+                  this.$router.replace('{name: 路由名}')
+
+                  push可以做回退操作，replace不能做回退效果
+                  回退操作:
+                    this.$router.go(-1)
+
+              - 路由元信息
+                  - meta:给路由定义一些特殊或者专属的信息
+                  - 通过this.$route.meta获取
+
+              - 路由传参:
+                - 通过动态绑定to属性, 然后传入一个对象,路径只能写name属性，然后写params对象
+
+              - 路由组件传参
+                - this.$router.push({name:'about', query: {num: this.num}})
+                  相当于get请求，参数会在url地址栏显示
+                  通过this.$route.query获取
+
+                - this.$router.push({name:'about', params: {num: this.num}})
+                  相当于post请求，参数不会会在url地址栏显示
+                  通过this.$route.params获取
+
+              - 路由守卫
+                - 全局路由守卫(都是钩子函数)
+                  一般定义在router.js当中
+                   - beforeEach((to, from, next) => {})
+                     进入路由之前
+                     to: 即将要进入的目标 路由对象
+                     from: 当前导航正要离开的路由
+                     next: 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是确认的
+                     next(false): 中断当前的导航。如果浏览器的 URL 改变了 (可能是用户手动或者浏览器后退按钮)，那么 URL 地址会重置到 from 路由对应的地址
+                     next('/') 或者 next({ path: '/' }): 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。你可以向 next 传递任意位置对象，
+                     且允许设置诸如 replace: true、name: 'home' 之类的选项以及任何用在 router-link 的 to prop 或 router.push 中的选项
+
+                   - beforeResolve
+                      和 router.beforeEach 类似，区别是在导航被确认之前，同时在所有组件内守卫和异步路由组件被解析之后，解析守卫就被调用
+
+                   - afterEach
+                      全局后置钩子，然而和守卫不同的是，这些钩子不会接受 next 函数也不会改变导航本身
+
+                   - 路由独享的守卫
+                      beforeEnter 进入路由之前
+                        {
+                          path: '/foo',
+                          component: Foo,
+                          beforeEnter: (to, from, next) => {
+                            // ...
+                         }
+
+                   - 组件内的守卫
+                      beforeRouteEnter
+                        在渲染该组件的对应路由被 confirm 前调用
+                        不能获取组件实例 this
+                        因为当守卫执行前，组件实例还没被创建
+                        next(vm => {
+                            // 通过 `vm` 访问组件实例
+                          })
+
+                      beforeRouteUpdate
+                        在当前路由改变，但是该组件被复用时调用
+                        举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
+                        由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
+                        可以访问组件实例this
+
+                      beforeRouteLeave (to, from, next) {
+                          导航离开该组件的对应路由时调用
+                          可以访问组件实例 `this`
+                        }
+                        beforeRouteUpdate 和 beforeRouteLeave 来说，this 已经可用了，所以不支持传递回调，因为没有必要了
+                        这个离开守卫通常用来禁止用户在还未保存修改前突然离开。该导航可以通过 next(false) 来取消
+                        beforeRouteLeave (to, from , next) {
+                          const answer = window.confirm('Do you really want to leave? you have unsaved changes!')
+                          if (answer) {
+                            next()
+                          } else {
+                            next(false)
+                          }
+                        }
+
+                   - 完整的导航解析流程
+                      导航被触发。
+                      在失活的组件里调用离开守卫。
+                      调用全局的 beforeEach 守卫。
+                      在重用的组件里调用 beforeRouteUpdate 守卫
+                      在路由配置里调用 beforeEnter。
+                      解析异步路由组件。
+                      在被激活的组件里调用 beforeRouteEnter。
+                      调用全局的 beforeResolve 守卫 (2.5+)。
+                      导航被确认。
+                      调用全局的 afterEach 钩子。
+                      触发 DOM 更新。
+                      用创建好的实例调用 beforeRouteEnter 守卫中传给 next 的回调函数
+
+                   - 命名视图
+                      有时候想同时 (同级) 展示多个视图，而不是嵌套展示，
+                      例如创建一个布局，有 sidebar (侧导航) 和 main (主内容) 两个视图，
+                      这个时候命名视图就派上用场了。你可以在界面中拥有多个单独命名的视图，而不是只有一个单独的出口。
+                      如果 router-view 没有设置名字，那么默认为 default
+
+                      <router-view class="view one"></router-view>
+                      <router-view class="view two" name="a"></router-view>
+                      <router-view class="view three" name="b"></router-view>
+
+                      const router = new VueRouter({
+                        routes: [
+                          {
+                            path: '/',
+                            components: {
+                              default: Foo,
+                              a: Bar,
+                              b: Baz
+                            }
+                          }
+                        ]
+                      })
+
+                      如果定义命名视图，路由对象中的component要定义成components
+
+
+
+
+
+
